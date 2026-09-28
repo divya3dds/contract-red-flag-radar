@@ -52,6 +52,17 @@ else:
     title = contract_text.strip()[:30] + "..." if contract_text.strip() else ""
 
 
+# ---------- Clause splitting ----------
+def split_clauses(text):
+    parts = re.split(r"\n\s*\n|\n(?=\d+\.\s)", text)
+    parts = [p.strip() for p in parts if p.strip()]
+    # Drop the opening (parties, recitals) before the first numbered clause
+    for i, p in enumerate(parts):
+        if re.match(r"\d+\.\s", p):
+            return parts[i:]
+    return parts
+
+
 # ---------- Analysis functions ----------
 def analyze_demo(clauses):
     results = []
@@ -109,8 +120,7 @@ Return exactly {len(clauses)} objects, one per clause, in order.
 
 # ---------- Analyze button ----------
 if contract_text and st.button("Analyze contract", type="primary"):
-    clauses = re.split(r"\n\s*\n|\n(?=\d+\.)", contract_text)
-    clauses = [c.strip() for c in clauses if c.strip()]
+    clauses = split_clauses(contract_text)
     try:
         if demo_mode:
             results = analyze_demo(clauses)
